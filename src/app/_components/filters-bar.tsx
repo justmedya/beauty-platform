@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { X } from 'lucide-react'
 
 const CATEGORIES = [
@@ -67,14 +66,20 @@ export function FiltersBar() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 hide-scrollbar">
-          <ToggleGroup type="single" value={category || ''} onValueChange={handleCategoryChange} className="justify-start">
-            {CATEGORIES.map(cat => (
-              <ToggleGroupItem key={cat.value} value={cat.value} aria-label={cat.label} className="whitespace-nowrap shrink-0">
-                {cat.label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat.value}
+              onClick={() => handleCategoryChange(cat.value)}
+              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                category === cat.value
+                  ? 'bg-primary text-white'
+                  : 'bg-muted hover:bg-muted/80'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
       </div>
     </div>
