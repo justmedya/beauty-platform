@@ -104,7 +104,7 @@ export function BookingCard({ booking }: { booking: MasterBooking }) {
                 Подтвердить
               </Button>
               <AlertDialog>
-                <AlertDialogTrigger asChild>
+                <AlertDialogTrigger>
                   <Button size="sm" variant="outline">Отклонить</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -133,7 +133,7 @@ export function BookingCard({ booking }: { booking: MasterBooking }) {
 
           {!loading && booking.status === 'confirmed' && isUpcoming && (
             <AlertDialog>
-              <AlertDialogTrigger asChild>
+              <AlertDialogTrigger>
                 <Button size="sm" variant="outline">Отменить</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
