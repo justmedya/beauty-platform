@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 const FROM = 'Beauty Platform <bookings@beauty-platform.kz>'
 
 export async function POST(request: Request) {
