@@ -1,12 +1,12 @@
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = 'Beauty Platform <bookings@beauty-platform.kz>'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
 export async function POST(request: Request) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     const body = await request.json()
     const { type, clientEmail, masterEmail, masterName, serviceName, dateTime } = body
 
