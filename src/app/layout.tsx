@@ -10,6 +10,7 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
+  manifest: '/manifest.json',
   title: {
     default: 'Beauty Platform — Записи к мастерам красоты в Астане',
     template: '%s | Beauty Platform',
