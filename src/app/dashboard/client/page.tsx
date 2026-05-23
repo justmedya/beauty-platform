@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getClientBookings, getClientScore } from '@/lib/queries/client-bookings'
-import { BeautyScoreDetails } from './_components/beauty-score-details'
+import { getClientBookings } from '@/lib/queries/client-bookings'
 import { ClientBookingCard } from './_components/client-booking-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CalendarCheck, Clock, XCircle } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function ClientDashboardPage() {
   const supabase = await createClient()
@@ -12,10 +12,7 @@ export default async function ClientDashboardPage() {
 
   if (!user) redirect('/login')
 
-  const [bookings, score] = await Promise.all([
-    getClientBookings(user.id),
-    getClientScore(user.id),
-  ])
+  const bookings = await getClientBookings(user.id)
 
   const now = new Date()
   const upcoming = bookings.filter(
@@ -36,15 +33,8 @@ export default async function ClientDashboardPage() {
     <main className="container mx-auto py-8 px-4 max-w-3xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Мой кабинет</h1>
-        <p className="text-muted-foreground mt-1">Записи и Beauty Score</p>
+        <p className="text-muted-foreground mt-1">Мои записи</p>
       </div>
-
-      {score && (
-        <div className="mb-10">
-          <h2 className="text-xl font-bold mb-4">Beauty Score — ваша репутация</h2>
-          <BeautyScoreDetails score={score} />
-        </div>
-      )}
 
       <Tabs defaultValue="upcoming">
         <TabsList className="mb-6">
@@ -72,9 +62,9 @@ export default async function ClientDashboardPage() {
             <div className="text-center py-16 text-muted-foreground">
               <CalendarCheck className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="font-medium">Нет предстоящих записей</p>
-              <a href="/" className="text-sm text-primary hover:underline mt-2 inline-block">
+              <Link href="/" className="text-sm text-primary hover:underline mt-2 inline-block">
                 Найти мастера →
-              </a>
+              </Link>
             </div>
           ) : (
             upcoming.map(b => <ClientBookingCard key={b.id} booking={b} canCancel />)

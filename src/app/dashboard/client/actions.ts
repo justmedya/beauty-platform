@@ -82,3 +82,22 @@ export async function cancelClientBookingAction(bookingId: string): Promise<Resu
   revalidatePath('/dashboard/client')
   return { success: true, data: undefined }
 }
+
+export async function updateClientProfileAction(fullName: string): Promise<Result> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Войдите' }
+
+  const trimmed = fullName.trim()
+  if (!trimmed) return { success: false, error: 'Имя не может быть пустым' }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ full_name: trimmed })
+    .eq('id', user.id)
+
+  if (error) return { success: false, error: 'Не удалось сохранить' }
+
+  revalidatePath('/dashboard/client')
+  return { success: true, data: undefined }
+}

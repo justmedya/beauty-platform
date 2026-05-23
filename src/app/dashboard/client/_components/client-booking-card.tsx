@@ -145,6 +145,7 @@ export function ClientBookingCard({ booking, canCancel }: { booking: ClientBooki
                 rows={3}
                 className="text-sm resize-none"
               />
+              <p className="text-xs text-muted-foreground text-right">{reviewText.length}/1000</p>
               <button
                 onClick={handleReview}
                 disabled={loading || !reviewRating}
