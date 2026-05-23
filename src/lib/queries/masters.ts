@@ -15,6 +15,7 @@ export type MasterListItem = {
   primary_photo: string | null
   min_price: number | null
   full_name: string
+  is_boosted: boolean
 }
 
 export type MasterFilters = {
@@ -38,11 +39,13 @@ export async function getMasters(filters: MasterFilters = {}): Promise<MasterLis
       rating,
       reviews_count,
       is_active,
+      boost_until,
       profiles!inner (full_name),
       portfolio_photos (url, position),
       services (price_kzt)
     `)
     .eq('is_active', true)
+    .order('boost_until', { ascending: false, nullsFirst: false })
     .order('rating', { ascending: false })
     .limit(100)
 
@@ -75,5 +78,6 @@ export async function getMasters(filters: MasterFilters = {}): Promise<MasterLis
     primary_photo: m.portfolio_photos?.[0]?.url ?? null,
     min_price: m.services?.length ? Math.min(...m.services.map((s: any) => s.price_kzt)) : null,
     full_name: m.profiles?.full_name || 'Unknown',
+    is_boosted: m.boost_until ? new Date(m.boost_until) > new Date() : false,
   }))
 }

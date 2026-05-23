@@ -1,12 +1,13 @@
 import { getMasterProfile } from '@/lib/queries/master-profile'
 import { type Metadata } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
 import { PortfolioGallery } from './_components/portfolio-gallery'
 import { ServicesList } from './_components/services-list'
 import { ReviewsList } from './_components/reviews-list'
 import { BookingButton } from './_components/booking-button'
 import { Badge } from '@/components/ui/badge'
-import { Star } from 'lucide-react'
+import { Star, MapPin, AtSign, ArrowLeft, Sparkles } from 'lucide-react'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -15,7 +16,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const master = await getMasterProfile(id)
-  
+
   return {
     title: `${master.profiles.full_name} — мастер красоты в Астане | Beauty Platform`,
     description: master.bio?.slice(0, 160) || 'Профессиональный мастер красоты',
@@ -40,6 +41,12 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default async function MasterProfilePage({ params }: Props) {
   const { id } = await params
   const master = await getMasterProfile(id)
+
+  const minPrice = master.services && master.services.length > 0
+    ? Math.min(...master.services.map((s: { price_kzt: number }) => s.price_kzt))
+    : null
+
+  const isBoosted = master.boost_until ? new Date(master.boost_until) > new Date() : false
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -70,145 +77,212 @@ export default async function MasterProfilePage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-background">
         {/* Hero */}
-        <div className="relative h-96 bg-gradient-to-b from-primary/10 to-transparent">
-          {master.portfolio_photos?.[0] && (
-            <Image
-              src={master.portfolio_photos[0].url}
-              alt={master.profiles.full_name}
-              fill
-              className="object-cover opacity-20"
-            />
+        <div className="relative h-80 md:h-96 overflow-hidden">
+          {/* Background: first portfolio photo or gradient */}
+          {master.portfolio_photos?.[0] ? (
+            <>
+              <Image
+                src={master.portfolio_photos[0].url}
+                alt={master.profiles.full_name}
+                fill
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-violet-500 to-pink-500" />
           )}
 
-          <div className="absolute inset-0 flex items-end justify-center pb-8">
-            <div className="flex flex-col items-center gap-4">
-              {master.profiles.avatar_url && (
-                <Image
-                  src={master.profiles.avatar_url}
-                  alt={master.profiles.full_name}
-                  width={120}
-                  height={120}
-                  className="rounded-full border-4 border-white shadow-lg object-cover"
-                />
-              )}
-              <div className="text-center">
-                <h1 className="text-4xl font-bold">{master.profiles.full_name}</h1>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.round(master.rating)
-                            ? 'fill-yellow-400 text-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
+          {/* Back button */}
+          <Link
+            href="/"
+            className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm text-white text-sm hover:bg-black/50 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Назад
+          </Link>
+
+          {/* Profile info overlay at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+            <div className="container mx-auto max-w-5xl flex items-end gap-5">
+              {/* Avatar */}
+              <div className="relative shrink-0">
+                {master.profiles.avatar_url ? (
+                  <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl border-3 border-white shadow-2xl overflow-hidden">
+                    <Image
+                      src={master.profiles.avatar_url}
+                      alt={master.profiles.full_name}
+                      width={112}
+                      height={112}
+                      className="object-cover w-full h-full"
+                    />
                   </div>
-                  <span className="font-semibold">
-                    {master.rating.toFixed(1)} ({master.reviews_count})
-                  </span>
+                ) : (
+                  <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl border-3 border-white shadow-2xl bg-primary/20 flex items-center justify-center text-3xl text-white font-bold">
+                    {master.profiles.full_name[0]}
+                  </div>
+                )}
+                {isBoosted && (
+                  <div className="absolute -top-2 -right-2 bg-amber-400 text-amber-900 text-xs font-bold px-2 py-0.5 rounded-full shadow flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    TOP
+                  </div>
+                )}
+              </div>
+
+              {/* Name + meta */}
+              <div className="flex-1 min-w-0 pb-1">
+                <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+                  {master.profiles.full_name}
+                </h1>
+                <div className="flex flex-wrap items-center gap-3 mt-2">
+                  {master.reviews_count > 0 ? (
+                    <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
+                      <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                      <span className="text-white text-sm font-semibold">
+                        {master.rating.toFixed(1)}
+                      </span>
+                      <span className="text-white/70 text-xs">({master.reviews_count})</span>
+                    </div>
+                  ) : (
+                    <span className="text-white/70 text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
+                      Новый мастер
+                    </span>
+                  )}
+                  {minPrice && (
+                    <span className="text-white/90 text-sm bg-black/30 backdrop-blur-sm rounded-full px-3 py-1 font-medium">
+                      от {minPrice.toLocaleString('ru')} ₸
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-12 max-w-5xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Основной контент */}
-            <div className="md:col-span-2 space-y-12">
-              {/* О мастере */}
-              <section>
-                <h2 className="text-2xl font-bold mb-4">Обо мне</h2>
-                <p className="text-muted-foreground leading-relaxed mb-4">{master.bio}</p>
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Main content */}
+            <div className="md:col-span-2 space-y-10">
 
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {master.categories.map((cat: string) => (
-                    <Badge key={cat} variant="secondary">
-                      {CATEGORY_LABELS[cat]}
-                    </Badge>
-                  ))}
-                </div>
+              {/* Category badges + address */}
+              <div className="flex flex-wrap gap-2 items-center">
+                {master.categories.map((cat: string) => (
+                  <Badge key={cat} className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20 hover:bg-primary/15">
+                    {CATEGORY_LABELS[cat]}
+                  </Badge>
+                ))}
+                {master.address && (
+                  <span className="flex items-center gap-1.5 text-sm text-muted-foreground ml-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {master.address}
+                  </span>
+                )}
+                {master.instagram_handle && (
+                  <a
+                    href={`https://instagram.com/${master.instagram_handle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+                  >
+                    <AtSign className="w-3.5 h-3.5" />
+                    {master.instagram_handle}
+                  </a>
+                )}
+              </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {master.address && (
-                    <div>
-                      <p className="text-muted-foreground">Адрес</p>
-                      <p className="font-semibold">{master.address}</p>
-                    </div>
-                  )}
-                  {master.instagram_handle && (
-                    <div>
-                      <p className="text-muted-foreground">Instagram</p>
-                      <a
-                        href={`https://instagram.com/${master.instagram_handle}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-primary hover:underline"
-                      >
-                        @{master.instagram_handle}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </section>
+              {/* Bio */}
+              {master.bio && (
+                <section>
+                  <h2 className="text-xl font-bold mb-3">Обо мне</h2>
+                  <p className="text-muted-foreground leading-relaxed">{master.bio}</p>
+                </section>
+              )}
 
-              {/* Портфолио */}
+              {/* Portfolio */}
               {master.portfolio_photos && master.portfolio_photos.length > 0 && (
                 <section>
-                  <h2 className="text-2xl font-bold mb-6">Портфолио</h2>
+                  <h2 className="text-xl font-bold mb-4">Портфолио</h2>
                   <PortfolioGallery photos={master.portfolio_photos} />
                 </section>
               )}
 
-              {/* Услуги */}
+              {/* Services */}
               {master.services && master.services.length > 0 && (
                 <section>
-                  <h2 className="text-2xl font-bold mb-6">Услуги</h2>
+                  <h2 className="text-xl font-bold mb-4">Услуги</h2>
                   <ServicesList services={master.services} />
                 </section>
               )}
 
-              {/* Отзывы */}
+              {/* Reviews */}
               {master.reviews && master.reviews.length > 0 && (
                 <section>
-                  <h2 className="text-2xl font-bold mb-6">Отзывы ({master.reviews_count})</h2>
+                  <h2 className="text-xl font-bold mb-4">
+                    Отзывы
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      ({master.reviews_count})
+                    </span>
+                  </h2>
                   <ReviewsList reviews={master.reviews} />
                 </section>
               )}
             </div>
 
-            {/* Боковая панель — кнопка записи (десктоп) */}
+            {/* Sticky booking sidebar (desktop) */}
             <div className="hidden md:block">
-              <div className="sticky top-8 rounded-xl border bg-card p-6 shadow-sm space-y-4">
+              <div className="sticky top-24 rounded-2xl border bg-card p-6 shadow-sm space-y-5">
                 <div>
-                  <p className="font-semibold text-lg">{master.profiles.full_name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    ⭐ {master.rating.toFixed(1)} · {master.reviews_count} отзывов
-                  </p>
+                  <p className="font-bold text-lg leading-tight">{master.profiles.full_name}</p>
+                  {master.reviews_count > 0 ? (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${i < Math.round(master.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
+                        />
+                      ))}
+                      <span className="text-sm text-muted-foreground ml-1">
+                        {master.rating.toFixed(1)} · {master.reviews_count} отзывов
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mt-1">Новый мастер</p>
+                  )}
                 </div>
-                {master.services && master.services.length > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    от {Math.min(...master.services.map((s: { price_kzt: number }) => s.price_kzt)).toLocaleString('ru')} ₸
-                  </p>
+
+                {minPrice && (
+                  <div className="rounded-xl bg-primary/5 border border-primary/15 px-4 py-3">
+                    <p className="text-xs text-muted-foreground">Стоимость от</p>
+                    <p className="text-2xl font-bold text-primary">{minPrice.toLocaleString('ru')} ₸</p>
+                  </div>
                 )}
-                <BookingButton
-                  masterId={master.id}
-                  masterName={master.profiles.full_name}
-                  services={master.services ?? []}
-                />
+
+                {master.services && master.services.length > 0 && (
+                  <BookingButton
+                    masterId={master.id}
+                    masterName={master.profiles.full_name}
+                    services={master.services ?? []}
+                  />
+                )}
+
+                {master.address && (
+                  <div className="flex items-start gap-2 text-sm text-muted-foreground pt-1 border-t">
+                    <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
+                    <span>{master.address}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Sticky кнопка записи (мобайл) */}
-      <div className="fixed bottom-4 left-4 right-4 md:hidden z-40">
+      {/* Mobile sticky booking button */}
+      <div className="fixed bottom-0 left-0 right-0 md:hidden z-40 p-4 bg-background/95 backdrop-blur border-t">
         <BookingButton
           masterId={master.id}
           masterName={master.profiles.full_name}

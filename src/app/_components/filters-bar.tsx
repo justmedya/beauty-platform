@@ -73,8 +73,8 @@ export function FiltersBar() {
               onClick={() => handleCategoryChange(cat.value)}
               className={`px-3 py-1.5 rounded-md text-sm transition-all ${
                 category === cat.value
-                  ? 'bg-primary text-white'
-                  : 'bg-muted hover:bg-muted/80'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-muted hover:bg-accent hover:text-accent-foreground'
               }`}
             >
               {cat.label}

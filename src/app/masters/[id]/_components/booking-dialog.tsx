@@ -137,7 +137,7 @@ export function BookingDialog({ masterId, masterName, services, open, onOpenChan
         {/* ШАГ 1: Услуга */}
         {step === 'service' && (
           <div className="space-y-4">
-            <Select value={selectedService} onValueChange={setSelectedService}>
+            <Select value={selectedService} onValueChange={v => v && setSelectedService(v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Выберите услугу" />
               </SelectTrigger>

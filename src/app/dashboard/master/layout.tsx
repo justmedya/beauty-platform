@@ -14,11 +14,10 @@ export default async function MasterDashboardLayout({
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const [{ data: profile }, { data: master }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
+    supabase.from('masters').select('id').eq('profile_id', user.id).maybeSingle(),
+  ])
 
   if (profile?.role !== 'master') {
     redirect('/')
@@ -26,7 +25,7 @@ export default async function MasterDashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <MasterSidebar />
+      <MasterSidebar masterId={master?.id} />
       <div className="flex-1 overflow-auto bg-muted/30">
         {children}
       </div>

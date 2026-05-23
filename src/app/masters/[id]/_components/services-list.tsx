@@ -1,7 +1,5 @@
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { formatPrice, formatDuration } from '@/lib/utils'
-import { Clock, Tag } from 'lucide-react'
+import { Clock } from 'lucide-react'
 
 type Service = {
   id: string
@@ -27,33 +25,30 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export function ServicesList({ services }: Props) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-3">
       {services.map(service => (
-        <Card key={service.id} className="p-6">
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-lg">{service.name}</h3>
-              <Badge variant="secondary">
-                {CATEGORY_LABELS[service.category]}
-              </Badge>
+        <div
+          key={service.id}
+          className="flex items-center justify-between gap-4 p-4 rounded-xl border bg-card hover:border-primary/30 hover:bg-primary/[0.02] transition-colors"
+        >
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-0.5">
+              <span className="font-semibold text-sm">{service.name}</span>
+              <span className="text-xs text-muted-foreground">{CATEGORY_LABELS[service.category]}</span>
             </div>
-
             {service.description && (
-              <p className="text-sm text-muted-foreground">{service.description}</p>
+              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{service.description}</p>
             )}
-
-            <div className="flex gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-muted-foreground" />
-                <span className="font-semibold">{formatPrice(service.price_kzt)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span>{formatDuration(service.duration_minutes)}</span>
-              </div>
+            <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
+              <Clock className="w-3 h-3" />
+              <span>{formatDuration(service.duration_minutes)}</span>
             </div>
           </div>
-        </Card>
+
+          <div className="shrink-0 text-right">
+            <p className="text-base font-bold text-primary">{formatPrice(service.price_kzt)}</p>
+          </div>
+        </div>
       ))}
     </div>
   )

@@ -5,10 +5,24 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import LogoutButton from './logout-button'
 import { cn } from '@/lib/utils'
+import { ChevronDown, LayoutDashboard, LogOut } from 'lucide-react'
+
+function Logo() {
+  return (
+    <Link href="/" className="flex items-center gap-2 group">
+      <span className="text-2xl">💄</span>
+      <span className="font-bold text-lg tracking-tight">
+        Beauty
+        <span className="text-primary">.</span>
+      </span>
+    </Link>
+  )
+}
 
 export async function Header() {
   const supabase = await createClient()
@@ -16,19 +30,23 @@ export async function Header() {
 
   if (!user) {
     return (
-      <header className="border-b">
-        <div className="container mx-auto flex justify-between items-center py-4 px-4">
-          <Link href="/" className="text-2xl font-bold">
-            💄 Beauty
-          </Link>
-          <div className="flex gap-2">
-            <Link href="/login" className={cn(buttonVariants({ variant: 'outline' }))}>
+      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+        <div className="container mx-auto flex justify-between items-center h-16 px-4">
+          <Logo />
+          <nav className="flex items-center gap-2">
+            <Link
+              href="/register?role=master"
+              className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+            >
+              Стать мастером
+            </Link>
+            <Link href="/login" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
               Войти
             </Link>
-            <Link href="/register" className={cn(buttonVariants())}>
+            <Link href="/register" className={cn(buttonVariants({ size: 'sm' }))}>
               Регистрация
             </Link>
-          </div>
+          </nav>
         </div>
       </header>
     )
@@ -42,23 +60,43 @@ export async function Header() {
 
   const dashboardHref = profile?.role === 'master' ? '/dashboard/master' : '/dashboard/client'
   const dashboardLabel = profile?.role === 'master' ? 'Кабинет мастера' : 'Мой кабинет'
+  const initials = profile?.full_name
+    ? profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '?'
 
   return (
-    <header className="border-b">
-      <div className="container mx-auto flex justify-between items-center py-4 px-4">
-        <Link href="/" className="text-2xl font-bold">
-          💄 Beauty
-        </Link>
+    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+      <div className="container mx-auto flex justify-between items-center h-16 px-4">
+        <Logo />
+
         <DropdownMenu>
-          <DropdownMenuTrigger className={cn(buttonVariants({ variant: 'outline' }))}>
-            {profile?.full_name || user.email}
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted transition-colors outline-none">
+            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold shrink-0">
+              {initials}
+            </div>
+            <span className="text-sm font-medium hidden sm:block max-w-32 truncate">
+              {profile?.full_name || user.email}
+            </span>
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+
+          <DropdownMenuContent align="end" className="w-48">
+            <div className="px-3 py-2">
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            </div>
+            <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={dashboardHref} className="w-full">{dashboardLabel}</Link>
+              <Link href={dashboardHref} className="flex items-center gap-2 w-full">
+                <LayoutDashboard className="w-4 h-4" />
+                {dashboardLabel}
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <LogoutButton />
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive">
+              <div className="flex items-center gap-2 w-full">
+                <LogOut className="w-4 h-4" />
+                <LogoutButton />
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

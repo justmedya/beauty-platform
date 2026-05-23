@@ -119,7 +119,7 @@ function AddServiceDialog({ masterCategories, onServiceAdded }: { masterCategori
 
           <div>
             <Label htmlFor="category">Категория</Label>
-            <Select value={formData.category} onValueChange={(val) => setFormData(prev => ({ ...prev, category: val }))}>
+            <Select value={formData.category} onValueChange={(val) => val && setFormData(prev => ({ ...prev, category: val }))}>
               <SelectTrigger id="category" disabled={loading}>
                 <SelectValue />
               </SelectTrigger>
@@ -148,7 +148,7 @@ function AddServiceDialog({ masterCategories, onServiceAdded }: { masterCategori
 
           <div>
             <Label htmlFor="duration">Длительность (минуты)</Label>
-            <Select value={formData.duration_minutes} onValueChange={(val) => setFormData(prev => ({ ...prev, duration_minutes: val }))}>
+            <Select value={formData.duration_minutes} onValueChange={(val) => val && setFormData(prev => ({ ...prev, duration_minutes: val }))}>
               <SelectTrigger id="duration" disabled={loading}>
                 <SelectValue />
               </SelectTrigger>
@@ -207,7 +207,7 @@ export function ServicesStep() {
         .eq('master_id', master.id)
 
       if (servicesData) {
-        setServices(servicesData)
+        setServices(servicesData.map(s => ({ ...s, description: s.description ?? undefined })))
       }
 
       setLoading(false)
@@ -282,7 +282,7 @@ export function ServicesStep() {
               const { data: master } = await supabase.from('masters').select('id').eq('profile_id', user.id).single()
               if (!master) return
               const { data: servicesData } = await supabase.from('services').select('*').eq('master_id', master.id)
-              if (servicesData) setServices(servicesData)
+              if (servicesData) setServices(servicesData.map(s => ({ ...s, description: s.description ?? undefined })))
             })
           }} />
         </div>
